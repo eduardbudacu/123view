@@ -1,10 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace DR\Review\Controller\App\Review;
 
 use DR\Review\Controller\AbstractController;
 use DR\Review\Entity\Git\Diff\DiffComparePolicy;
+use DR\Review\Entity\Git\Diff\DiffFile;
 use DR\Review\Entity\Review\CodeReview;
 use DR\Review\Model\Page\Breadcrumb;
 use DR\Review\Request\Review\ReviewRequest;
@@ -26,7 +28,6 @@ class ReviewSummaryController extends AbstractController
     public function __construct(
         private readonly CodeReviewRevisionService $revisionService,
         private readonly ReviewDiffServiceInterface $diffService,
-        private readonly BasicCherryPickStrategy $basicCherryPickStrategy,
         private readonly Client $openAIClient,
     ) {
     }
@@ -43,15 +44,27 @@ class ReviewSummaryController extends AbstractController
     {
         $revisions = $this->revisionService->getRevisions($review);
         $repository = Assert::notNull($review->getRepository());
-        $result = $this->openAIClient->completions()->create([
-            'model' => 'gpt-3.5-turbo-instruct',
-            'prompt' => 'PHP is',
-        ]);
-        dd($result->choices[0]->text);
+
         $reviewType = $review->getType();
         $diffOptions = new FileDiffOptions(FileDiffOptions::DEFAULT_LINE_DIFF, DiffComparePolicy::ALL, $reviewType);
         $files = $this->diffService->getDiffForRevisions($repository, $revisions, $diffOptions);
-        $output = $this->basicCherryPickStrategy->getDiffOutput($repository, $revisions, $diffOptions);
-        dd($review, $revisions, $files, $output);
+        $output = implode("\n", array_map(fn (DiffFile $file) => $file->rawContent, $files));
+
+        $filePath = $this->getParameter('kernel.project_dir') . '/prompts/review-summary.md';
+
+        if (!file_exists($filePath)) {
+            throw $this->createNotFoundException('The file does not exist');
+        }
+
+        $fileContent = file_get_contents($filePath);
+
+        $result = $this->openAIClient->chat()->create([
+            'model' => 'gpt-4o',
+            'messages' => [
+                ['role' => 'system', 'content' => $fileContent],
+                ['role' => 'user', 'content' => 'Summarize the following diff:' . $output],
+            ],
+        ]);
+        dd($result->choices[0]->message->content);
     }
 }
