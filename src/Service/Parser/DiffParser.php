@@ -43,6 +43,7 @@ class DiffParser
             }
 
             $diffFile                 = new DiffFile();
+            $diffFile->rawContent     = $patchFile;
             $diffFile->filePathBefore = $matches[1][$index - 1] ?? null;
             $diffFile->filePathAfter  = $matches[2][$index - 1] ?? null;
 

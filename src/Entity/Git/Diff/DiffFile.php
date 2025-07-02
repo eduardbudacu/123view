@@ -18,8 +18,9 @@ class DiffFile
     public ?string $filePathBefore = null;
     public ?string $filePathAfter  = null;
 
-    public ?string $hashStart = null;
-    public ?string $hashEnd   = null;
+    public ?string $hashStart  = null;
+    public ?string $hashEnd    = null;
+    public ?string $rawContent = null;
 
     public bool $hasMergeConflict = false;
     public bool $binary           = false;
