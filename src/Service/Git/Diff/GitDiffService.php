@@ -110,28 +110,6 @@ class GitDiffService implements LoggerAwareInterface
     }
 
     /**
-     * @throws RepositoryException|ParseException
-     */
-    public function getOutputDiffFromRevisions(Repository $repository, ?FileDiffOptions $options = null): string
-    {
-        // create git diff HEAD command
-        $commandBuilder = $this->builderFactory->createDiff()
-            ->hash('HEAD')
-            ->diffAlgorithm(DiffAlgorithmType::MYERS)
-            ->unified($options?->unifiedDiffLines ?? 10)
-            ->ignoreCrAtEol()
-            ->ignoreSpaceAtEol();
-
-        if ($options?->comparePolicy === DiffComparePolicy::TRIM) {
-            $commandBuilder->ignoreSpaceChange();
-        } elseif (in_array($options?->comparePolicy, [DiffComparePolicy::IGNORE, DiffComparePolicy::IGNORE_EMPTY_LINES], true)) {
-            $commandBuilder->ignoreAllSpace();
-        }
-
-        return $this->repositoryService->getRepository($repository)->execute($commandBuilder);
-    }
-
-    /**
      * @return DiffFile[]
      * @throws RepositoryException|ParseException
      */

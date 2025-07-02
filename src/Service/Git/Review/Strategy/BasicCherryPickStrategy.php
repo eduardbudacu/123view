@@ -50,26 +50,4 @@ class BasicCherryPickStrategy implements ReviewDiffStrategyInterface
             }
         });
     }
-
-    public function getDiffOutput(Repository $repository, array $revisions, ?FileDiffOptions $options = null): string
-    {
-        // create branch
-        $branchName = $this->checkoutService->checkoutRevision(Arrays::first($revisions));
-
-        return $this->resetManager->start($repository, $branchName, function () use ($repository, $revisions, $options) {
-            try {
-                // cherry-pick revisions
-                if ($this->cherryPickService->cherryPickRevisions($revisions)->completed === false) {
-                    throw new RepositoryException('Cherry-pick failed');
-                }
-
-                // get the diff
-                return $this->diffService->getOutputDiffFromRevisions($repository, $options);
-            } catch (RepositoryException|ProcessFailedException $exception) {
-                $this->cherryPickService->cherryPickAbort($repository);
-
-                throw $exception;
-            }
-        });
-    }
 }
