@@ -34,7 +34,7 @@ class ReviewSummaryAgent
 
     private function setSystemInstructions(): void
     {
-        $filePath                 = $this->getParameter('kernel.project_dir') . '/prompts/review-summary.md';
+        $filePath                 = '../../../prompts/review-summary.md';
         $fileContent              = file_get_contents($filePath);
         $this->systemInstructions = $fileContent;
     }
