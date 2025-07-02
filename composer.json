@@ -9,8 +9,9 @@
         "sort-packages": true,
         "process-timeout": 0,
         "allow-plugins": {
-            "phpstan/extension-installer": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
+            "php-http/discovery": true,
+            "phpstan/extension-installer": true,
             "symfony/flex": true,
             "symfony/runtime": true
         }
@@ -54,6 +55,7 @@
         "liip/monitor-bundle": "^2.22",
         "nesbot/carbon": "^3.0",
         "nette/utils": "^4.0",
+        "openai-php/symfony": "*",
         "parsica-php/parsica": "^0.8.1",
         "phpdocumentor/reflection-docblock": "^5.3",
         "scienta/doctrine-json-functions": "^6.0",
