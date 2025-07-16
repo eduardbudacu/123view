@@ -20,14 +20,18 @@ class ReviewSummaryAgent
 
     public function generateSummary(string $diff): AiSummaryResponse
     {
-        $context        = [
-            ['role' => 'system', 'content' => $this->systemInstructions],
-            ['role' => 'user', 'content' => $diff],
-        ];
-        $openAIResponse = $this->openAIClient->chat()->create([
-            'model'    => 'gpt-3.5-turbo',
-            'messages' => $context,
-        ]);
+        try {
+            $context        = [
+                ['role' => 'system', 'content' => $this->systemInstructions],
+                ['role' => 'user', 'content' => $diff],
+            ];
+            $openAIResponse = $this->openAIClient->chat()->create([
+                'model'    => 'gpt-3.5-turbo',
+                'messages' => $context,
+            ]);
+        } catch (Throwable $e) {
+            throw new RuntimeException('Failed to generate summary: ' . $e->getMessage() . ' Context' . print_r($context, true), 0, $e);
+        }
 
         return new AiSummaryResponse(Assert::notNull($openAIResponse->choices[0]->message->content), $context);
     }
