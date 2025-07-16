@@ -7,12 +7,13 @@ namespace DR\Review\Ai\Agent\ReviewSummary;
 use DR\Review\Ai\Summary\AiSummaryResponse;
 use DR\Utils\Assert;
 use OpenAI\Client;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ReviewSummaryAgent
 {
     private string $systemInstructions;
 
-    public function __construct(private readonly Client $openAIClient,)
+    public function __construct(private readonly Client $openAIClient, private ParameterBagInterface $params)
     {
         $this->setSystemInstructions();
     }
@@ -34,7 +35,7 @@ class ReviewSummaryAgent
 
     private function setSystemInstructions(): void
     {
-        $filePath                 = '../../../prompts/review-summary.md';
+        $filePath                 = $this->params->get('kernel.project_dir') . '/prompts/review-summary.md';
         $fileContent              = file_get_contents($filePath);
         $this->systemInstructions = $fileContent;
     }

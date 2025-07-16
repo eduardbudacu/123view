@@ -127,6 +127,7 @@ return static function (ContainerConfigurator $container): void {
     $services->load('DR\Review\Security\Voter\\', __DIR__ . '/../src/Security/Voter');
     $services->load('DR\Review\ViewModelProvider\\', __DIR__ . '/../src/ViewModelProvider');
     $services->load('DR\Review\Webhook\\', __DIR__ . '/../src/Webhook');
+    $services->load('DR\Review\Ai\\', __DIR__ . '/../src/Ai');
 
     // create empty cache clearer
     $services->set('cache.default_clearer', Psr6CacheClearer::class)->args([[]]);

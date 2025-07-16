@@ -32,7 +32,6 @@ class ReviewSummaryController extends AbstractController
     public function __invoke(ReviewRequest $request, #[MapEntity(expr: 'repository.findByUrl(repositoryName, reviewId)')] CodeReview $review): array
     {
         $result = $this->reviewSummaryProvider->getSummaryFromReview($review);
-
         dd($result);
     }
 }
