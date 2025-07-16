@@ -18,25 +18,24 @@ class ReviewSummaryAgent
         $this->setSystemInstructions();
     }
 
-    public function generateSummary(string $diff): string
+    public function generateSummary(string $diff): AiSummaryResponse
     {
+        $context        = [
+            ['role' => 'system', 'content' => $this->systemInstructions],
+            ['role' => 'user', 'content' => $diff],
+        ];
         $openAIResponse = $this->openAIClient->chat()->create([
             'model'    => 'gpt-3.5-turbo',
-            'messages' => [
-                ['role' => 'system', 'content' => $this->systemInstructions],
-                ['role' => 'user', 'content' => $diff],
-            ],
+            'messages' => $context,
         ]);
 
-        $response = new AiSummaryResponse(Assert::notNull($openAIResponse->choices[0]->message->content));
-
-        return $response->getSummary();
+        return new AiSummaryResponse(Assert::notNull($openAIResponse->choices[0]->message->content), $context);
     }
 
     private function setSystemInstructions(): void
     {
         $filePath                 = $this->params->get('kernel.project_dir') . '/prompts/review-summary.md';
         $fileContent              = file_get_contents($filePath);
-        $this->systemInstructions = $fileContent;
+        $this->systemInstructions = $fileContent !== false ? $fileContent : '';
     }
 }
