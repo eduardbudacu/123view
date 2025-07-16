@@ -7,7 +7,9 @@ namespace DR\Review\Ai\Agent\ReviewSummary;
 use DR\Review\Ai\Summary\AiSummaryResponse;
 use DR\Utils\Assert;
 use OpenAI\Client;
+use RuntimeException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Throwable;
 
 class ReviewSummaryAgent
 {
