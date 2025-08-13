@@ -9,10 +9,13 @@ readonly class AiSummaryResponse
     /**
      * @param string $summary The AI-generated summary
      * @param array<int, array{role: string, content: string}> $context The context used for the AI request
-     * @param array<string, int> $fileTokenSizes Token count per file (filename => token count)
+     * @param TokenAnalysis $tokenAnalysis Token analysis data
      */
-    public function __construct(public string $summary, public array $context = [], public array $fileTokenSizes = [])
-    {
+    public function __construct(
+        public string $summary,
+        public array $context = [],
+        public TokenAnalysis $tokenAnalysis = new TokenAnalysis()
+    ) {
     }
 
     public function getSummary(): string
@@ -29,60 +32,10 @@ readonly class AiSummaryResponse
     }
 
     /**
-     * Get token sizes per file.
-     *
-     * @return array<string, int> Array of filename => token count
+     * Get the token analysis instance.
      */
-    public function getFileTokenSizes(): array
+    public function getTokenAnalysis(): TokenAnalysis
     {
-        return $this->fileTokenSizes;
-    }
-
-    /**
-     * Calculate the total token size across all files.
-     */
-    public function getTotalTokenSize(): int
-    {
-        return array_sum($this->fileTokenSizes);
-    }
-
-    /**
-     * Get the largest file by token count.
-     *
-     * @return array{filename: string, tokens: int}|null
-     */
-    public function getLargestFileByTokens(): ?array
-    {
-        if (count($this->fileTokenSizes) === 0) {
-            return null;
-        }
-
-        $maxTokens = max($this->fileTokenSizes);
-        $filename = array_search($maxTokens, $this->fileTokenSizes, true);
-
-        return [
-            'filename' => $filename,
-            'tokens' => $maxTokens
-        ];
-    }
-
-    /**
-     * Get files sorted by token count (descending).
-     *
-     * @return array<string, int>
-     */
-    public function getFilesSortedByTokens(): array
-    {
-        $sorted = $this->fileTokenSizes;
-        arsort($sorted);
-        return $sorted;
-    }
-
-    /**
-     * Get the number of files processed.
-     */
-    public function getFileCount(): int
-    {
-        return count($this->fileTokenSizes);
+        return $this->tokenAnalysis;
     }
 }

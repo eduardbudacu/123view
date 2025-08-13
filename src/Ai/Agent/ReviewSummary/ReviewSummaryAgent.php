@@ -66,7 +66,7 @@ class ReviewSummaryAgent
      * @param DiffFile[] $diffFiles     The diff files to validate
      * @param int|null   $maxFileTokens Maximum tokens per file (if null, uses 25% of total max tokens)
      *
-     * @return array{files: DiffFile[], tokenSizes: array<string, int>} Filtered files and their token sizes
+     * @return array{files: DiffFile[], tokenSizes: array<string, int>, filteredFiles: array<int, array{file: string, tokens: int, reason: string}>} Filtered files, their token sizes, and excluded files
      * @throws RuntimeException If no files remain after filtering or total exceeds limits
      */
     public function validateTokenCountForFiles(array $diffFiles, ?int $maxFileTokens = null): array
@@ -123,8 +123,9 @@ class ReviewSummaryAgent
         }
 
         return [
-            'files'      => $filteredFiles,
-            'tokenSizes' => $fileTokenSizes
+            'files'         => $filteredFiles,
+            'tokenSizes'    => $fileTokenSizes,
+            'filteredFiles' => $excludedFiles
         ];
     }
 

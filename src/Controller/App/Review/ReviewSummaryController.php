@@ -30,10 +30,8 @@ class ReviewSummaryController extends AbstractController
     #[Route('app/{repositoryName<[\w-]+>}/review-summary-debug/cr-{reviewId<\d+>}', name: self::class . '_debug', methods: 'GET')]
     #[Template('app/review/review.html.twig')]
     #[IsGranted(Roles::ROLE_USER)]
-    public function debug(
-        ReviewRequest $request,
-        #[MapEntity(expr: 'repository.findByUrl(repositoryName, reviewId)')] CodeReview $review
-    ): array {
+    public function debug(ReviewRequest $request, #[MapEntity(expr: 'repository.findByUrl(repositoryName, reviewId)')] CodeReview $review): array
+    {
         $result = $this->reviewSummaryProvider->getDiffAnalysisFromReview($review);
         $this->dumpAnalysis($result);
     }
@@ -56,15 +54,19 @@ class ReviewSummaryController extends AbstractController
      */
     private function dumpAnalysis(AiSummaryResponse $aiResult): never
     {
+        $tokenAnalysis = $aiResult->getTokenAnalysis();
+
         $debugData = [
             'summary'         => $aiResult->getSummary(),
             'context'         => $aiResult->getContext(),
             'token_analysis'  => [
-                'total_tokens'           => $aiResult->getTotalTokenSize(),
-                'file_count'             => $aiResult->getFileCount(),
-                'largest_file'           => $aiResult->getLargestFileByTokens(),
-                'files_sorted_by_tokens' => $aiResult->getFilesSortedByTokens(),
-                'file_token_sizes'       => $aiResult->getFileTokenSizes()
+                'total_tokens'           => $tokenAnalysis->getTotalTokenSize(),
+                'file_count'             => $tokenAnalysis->getFileCount(),
+                'largest_file'           => $tokenAnalysis->getLargestFileByTokens(),
+                'files_sorted_by_tokens' => $tokenAnalysis->getFilesSortedByTokens(),
+                'file_token_sizes'       => $tokenAnalysis->getFileTokenSizes(),
+                'filtered_files'         => $tokenAnalysis->getFilteredFiles(),
+                'filtered_files_count'   => $tokenAnalysis->getFilteredFileCount()
             ],
             'original_result' => $aiResult
         ];

@@ -6,6 +6,7 @@ namespace DR\Review\Ai\PromptBuilder;
 
 use DR\Review\Ai\Agent\ReviewSummary\ReviewSummaryAgent;
 use DR\Review\Ai\Summary\AiSummaryResponse;
+use DR\Review\Ai\Summary\TokenAnalysis;
 use DR\Review\Entity\Review\CodeReview;
 use DR\Review\Service\CodeReview\DiffOutputService;
 
@@ -23,17 +24,24 @@ readonly class ReviewSummaryProvider
         $validationResult = $this->summaryAgent->validateTokenCountForFiles($diffFiles);
         $filteredFiles    = $validationResult['files'];
         $fileTokenSizes   = $validationResult['tokenSizes'];
+        $excludedFiles    = $validationResult['filteredFiles'];
+
+        // Sort excluded files by tokens in descending order
+        usort($excludedFiles, fn($a, $b) => $b['tokens'] <=> $a['tokens']);
 
         // Prepare diff output from filtered files
         $diffOutput = $this->summaryAgent->prepareDiffOutput($filteredFiles);
 
         $aiResponse = $this->summaryAgent->generateSummary($diffOutput);
 
-        // Return response with token size information
+        // Create TokenAnalysis object
+        $tokenAnalysis = new TokenAnalysis($fileTokenSizes, $excludedFiles);
+
+        // Return response with token analysis
         return new AiSummaryResponse(
             $aiResponse->getSummary(),
             $aiResponse->getContext(),
-            $fileTokenSizes
+            $tokenAnalysis
         );
     }
 
@@ -44,26 +52,30 @@ readonly class ReviewSummaryProvider
     {
         $diffFiles = $this->diffOutputService->getDiffFilesFromReview($review);
 
-        // Get token sizes for each file without filtering (for analysis purposes)
-        $fileTokenSizes = [];
-        foreach ($diffFiles as $file) {
-            $filename                  = $file->getPathname();
-            $fileTokens                = $this->summaryAgent->estimateTokenCountForContent($file->rawContent ?? '');
-            $fileTokenSizes[$filename] = $fileTokens;
-        }
+        // Filter files based on token limits and get token sizes (for analysis purposes)
+        $validationResult = $this->summaryAgent->validateTokenCountForFiles($diffFiles);
+        $filteredFiles    = $validationResult['files'];
+        $fileTokenSizes   = $validationResult['tokenSizes'];
+        $excludedFiles    = $validationResult['filteredFiles'];
+
+        // Sort excluded files by tokens in descending order
+        usort($excludedFiles, fn($a, $b) => $b['tokens'] <=> $a['tokens']);
 
         // Prepare the context that would be sent to AI (without actually sending it)
-        $diffOutput = $this->summaryAgent->prepareDiffOutput($diffFiles);
+        $diffOutput = $this->summaryAgent->prepareDiffOutput($filteredFiles);
         $context    = [
             ['role' => 'system', 'content' => $this->summaryAgent->getSystemInstructions()],
             ['role' => 'user', 'content' => $diffOutput],
         ];
 
-        // Return AiSummaryResponse with context and token data
+        // Create TokenAnalysis object
+        $tokenAnalysis = new TokenAnalysis($fileTokenSizes, $excludedFiles);
+
+        // Return AiSummaryResponse with context, token data, and filtered files
         return new AiSummaryResponse(
-            summary       : '',  // No AI summary generated
-            context       : $context,  // Context that would be sent to AI
-            fileTokenSizes: $fileTokenSizes
+            summary: '',  // No AI summary generated
+            context: $context,  // Context that would be sent to AI
+            tokenAnalysis: $tokenAnalysis
         );
     }
 }
