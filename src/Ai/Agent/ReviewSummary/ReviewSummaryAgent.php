@@ -20,7 +20,7 @@ class ReviewSummaryAgent
     public function __construct(private readonly Client $openAIClient, private ParameterBagInterface $params)
     {
         $this->setSystemInstructions();
-        $this->maxTokens = $this->params->has('ai.max_tokens') ? $this->params->get('ai.max_tokens') : 4000;
+        $this->maxTokens = $this->params->has('AI_MAX_TOKENS') ? $this->params->get('AI_MAX_TOKENS') : 4000;
     }
 
     /**
@@ -161,9 +161,17 @@ class ReviewSummaryAgent
     /**
      * Get the configured AI model.
      */
-    private function getConfiguredModel(): string
+    public function getConfiguredModel(): string
     {
-        return $this->params->has('ai.model') ? $this->params->get('ai.model') : 'gpt-3.5-turbo';
+        return $this->params->has('AI_MODEL') ? $this->params->get('AI_MODEL') : 'gpt-3.5-turbo';
+    }
+
+    /**
+     * Get the maximum tokens limit.
+     */
+    public function getMaxTokens(): int
+    {
+        return $this->maxTokens;
     }
 
     /**

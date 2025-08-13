@@ -16,6 +16,16 @@ readonly class ReviewSummaryProvider
     {
     }
 
+    public function getConfiguredModel(): string
+    {
+        return $this->summaryAgent->getConfiguredModel();
+    }
+
+    public function getMaxTokens(): int
+    {
+        return $this->summaryAgent->getMaxTokens();
+    }
+
     public function getSummaryFromReview(CodeReview $review): AiSummaryResponse
     {
         $diffFiles = $this->diffOutputService->getDiffFilesFromReview($review);

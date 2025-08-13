@@ -59,6 +59,8 @@ class ReviewSummaryController extends AbstractController
         $debugData = [
             'summary'         => $aiResult->getSummary(),
             'context'         => $aiResult->getContext(),
+            'configured_model' => $this->reviewSummaryProvider->getConfiguredModel(),
+            'max_tokens'       => $this->reviewSummaryProvider->getMaxTokens(),
             'token_analysis'  => [
                 'total_tokens'           => $tokenAnalysis->getTotalTokenSize(),
                 'file_count'             => $tokenAnalysis->getFileCount(),
