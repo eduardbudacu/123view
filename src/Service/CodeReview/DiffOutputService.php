@@ -20,14 +20,24 @@ class DiffOutputService
 
     public function getDiffOutputFromReview(CodeReview $review): string
     {
+        $files  = $this->getDiffFilesFromReview($review);
+        $output = implode("\n", array_map(static fn(DiffFile $file) => $file->rawContent, $files));
+
+        return $output;
+    }
+
+    /**
+     * Get diff files from review as an array.
+     * @return DiffFile[]
+     */
+    public function getDiffFilesFromReview(CodeReview $review): array
+    {
         $revisions  = $this->revisionService->getRevisions($review);
         $repository = Assert::notNull($review->getRepository());
 
         $reviewType  = $review->getType();
         $diffOptions = new FileDiffOptions(FileDiffOptions::DEFAULT_LINE_DIFF, DiffComparePolicy::ALL, $reviewType);
-        $files       = $this->diffService->getDiffForRevisions($repository, $revisions, $diffOptions);
-        $output      = implode("\n", array_map(static fn(DiffFile $file) => $file->rawContent, $files));
 
-        return $output;
+        return $this->diffService->getDiffForRevisions($repository, $revisions, $diffOptions);
     }
 }
