@@ -92,6 +92,8 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_it
 return static function (ContainerConfigurator $container): void {
     $container->parameters()->set('timezone', '%env(APP_TIMEZONE)%');
     $container->parameters()->set('locale', '%env(APP_LOCALE)%');
+    $container->parameters()->set('AI_MODEL', '%env(AI_MODEL)%');
+    $container->parameters()->set('AI_MAX_TOKENS', '%env(int:AI_MAX_TOKENS)%');
     $services = $container->services();
 
     $services
