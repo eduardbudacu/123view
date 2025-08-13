@@ -77,10 +77,30 @@ class ReviewSummaryAgent
         $totalTokens    = $this->estimateTokenCountForContent($this->systemInstructions);
         $excludedFiles  = [];
 
+        // First, calculate token sizes for all files and sort by size descending
+        $filesWithTokens = [];
         foreach ($diffFiles as $file) {
             $filename    = $file->getPathname();
             $fileContent = $file->rawContent;
             $fileTokens  = $this->estimateTokenCountForContent($fileContent);
+
+            $filesWithTokens[] = [
+                'file'     => $file,
+                'filename' => $filename,
+                'tokens'   => $fileTokens
+            ];
+        }
+
+        // Sort files by token count ascending (smallest first)
+        usort($filesWithTokens, function ($a, $b) {
+            return $a['tokens'] <=> $b['tokens'];
+        });
+
+        // Now process files in order of smallest to largest
+        foreach ($filesWithTokens as $fileData) {
+            $file       = $fileData['file'];
+            $filename   = $fileData['filename'];
+            $fileTokens = $fileData['tokens'];
 
             if ($fileTokens > $maxFileTokens) {
                 $excludedFiles[] = [
@@ -121,6 +141,9 @@ class ReviewSummaryAgent
                 )
             );
         }
+
+        // Sort the final fileTokenSizes array by token count descending for consistent output
+        arsort($fileTokenSizes);
 
         return [
             'files'         => $filteredFiles,
