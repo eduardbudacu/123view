@@ -4,7 +4,7 @@
 
 <form method="get"
       action="{{ path('DR\\Review\\Controller\\App\\Review\\ReviewSummaryController', {reviewId:review.projectId, repositoryName: review.repository.name} )}}">
-    <button type="submit" class="btn btn-outline-primary btn-sm">
+    <button type="submit" class="btn btn-outline-primary btn-sm" {{ stimulus_controller('button') }}>
         Code summary
     </button>
 </form>
