@@ -34,4 +34,17 @@ class ReviewSummaryController extends AbstractController
         $result = $this->reviewSummaryProvider->getSummaryFromReview($review);
         dd($result);
     }
+
+    /**
+     * @return array<string, string|object|Breadcrumb[]>
+     * @throws Throwable
+     */
+    #[Route('app/{repositoryName<[\w-]+>}/review-summary-debug/cr-{reviewId<\d+>}', name: self::class . '_debug', methods: 'GET')]
+    #[Template('app/review/review.html.twig')]
+    #[IsGranted(Roles::ROLE_USER)]
+    public function __invokeDebug(ReviewRequest $request, #[MapEntity(expr: 'repository.findByUrl(repositoryName, reviewId)')] CodeReview $review): array
+    {
+        $result = $this->reviewSummaryProvider->getDiffOutputFromReview($review);
+        dd($result);
+    }
 }

@@ -21,4 +21,9 @@ readonly class ReviewSummaryProvider
 
         return $this->summaryAgent->generateSummary($diffOutput);
     }
+
+    public function getDiffOutputFromReview(CodeReview $review): string
+    {
+        return $this->diffOutputService->getDiffOutputFromReview($review);
+    }
 }
