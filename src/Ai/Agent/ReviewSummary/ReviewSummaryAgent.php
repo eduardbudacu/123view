@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace DR\Review\Ai\Agent\ReviewSummary;
 
 use DR\Review\Ai\Summary\AiSummaryResponse;
+use DR\Review\Ai\Targetproccess\TargetprocessAPI;
 use DR\Review\Entity\Git\Diff\DiffFile;
+use DR\Review\Entity\Review\CodeReview;
 use DR\Utils\Assert;
 use OpenAI\Client;
 use RuntimeException;
@@ -17,8 +19,11 @@ class ReviewSummaryAgent
     private string $systemInstructions;
     private int $maxTokens;
 
-    public function __construct(private readonly Client $openAIClient, private ParameterBagInterface $params)
-    {
+    public function __construct(
+        private readonly Client $openAIClient,
+        private ParameterBagInterface $params,
+        private readonly TargetprocessAPI $targetProcessApi
+    ) {
         $this->setSystemInstructions();
         $this->maxTokens = $this->params->has('AI_MAX_TOKENS') ? $this->params->get('AI_MAX_TOKENS') : 4000;
     }
@@ -27,9 +32,13 @@ class ReviewSummaryAgent
      * Generates a summary for the given diff using the AI model.
      * Note: Token validation should be done before calling this method.
      */
-    public function generateSummary(string $diff): AiSummaryResponse
+    public function generateSummary(string $diff, ?CodeReview $review): AiSummaryResponse
     {
         $model = $this->getConfiguredModel();
+
+        // insert Targetproccess context from api.
+        $targetprocessData = $this->targetProcessApi->getTasksAndStoriesFromCodeReview($review);
+        dump($targetprocessData);
 
         $context = [
             ['role' => 'system', 'content' => $this->systemInstructions],
@@ -66,7 +75,8 @@ class ReviewSummaryAgent
      * @param DiffFile[] $diffFiles     The diff files to validate
      * @param int|null   $maxFileTokens Maximum tokens per file (if null, uses 25% of total max tokens)
      *
-     * @return array{files: DiffFile[], tokenSizes: array<string, int>, filteredFiles: array<int, array{file: string, tokens: int, reason: string}>} Filtered files, their token sizes, and excluded files
+     * @return array{files: DiffFile[], tokenSizes: array<string, int>, filteredFiles: array<int, array{file: string, tokens: int, reason: string}>}
+     *                      Filtered files, their token sizes, and excluded files
      * @throws RuntimeException If no files remain after filtering or total exceeds limits
      */
     public function validateTokenCountForFiles(array $diffFiles, ?int $maxFileTokens = null): array

@@ -42,7 +42,7 @@ readonly class ReviewSummaryProvider
         // Prepare diff output from filtered files
         $diffOutput = $this->summaryAgent->prepareDiffOutput($filteredFiles);
 
-        $aiResponse = $this->summaryAgent->generateSummary($diffOutput);
+        $aiResponse = $this->summaryAgent->generateSummary($diffOutput, $review);
 
         // Create TokenAnalysis object
         $tokenAnalysis = new TokenAnalysis($fileTokenSizes, $excludedFiles);

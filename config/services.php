@@ -8,6 +8,7 @@ use CzProject\GitPhp\Git;
 use CzProject\GitPhp\Runners\CliRunner;
 use DigitalRevolution\SymfonyConsoleValidation\InputValidator;
 use DR\JBDiff\JBDiff;
+use DR\Review\Ai\Targetproccess\TargetprocessAPI;
 use DR\Review\ApiPlatform\OpenApi\OpenApiFactory;
 use DR\Review\ApiPlatform\OpenApi\OperationParameterDocumentor;
 use DR\Review\Entity\User\User;
@@ -85,6 +86,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpClient\NativeHttpClient;
 use Symfony\Component\HttpKernel\CacheClearer\Psr6CacheClearer;
 use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use TheNetworg\OAuth2\Client\Provider\Azure;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\inline_service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -261,4 +263,11 @@ return static function (ContainerConfigurator $container): void {
     $services->set(FileDiffViewModelAppender::class)->tag('review.view_model_appender');
     $services->set(BranchReviewViewModelAppender::class)->tag('review.view_model_appender');
     $services->set(ReviewViewModelProvider::class)->arg('$reviewViewModelAppenders', tagged_iterator('review.view_model_appender'));
+
+    $services->set(TargetprocessAPI::class)
+        ->args([
+            service(HttpClientInterface::class),
+            '%env(TARGETPROCESS_API_URL)%',
+            '%env(TARGETPROCESS_API_TOKEN)%'
+        ]);
 };
