@@ -10,5 +10,6 @@ if docker info > /dev/null 2>&1; then
 else
   echo "Docker daemon is not available. Skipping Docker cleanup."
 fi
-rm -rf "$(dirname "$0")/../vendor/"
-rm -rf "$(dirname "$0")/../var"
+# can be dangerous, uncomment with caution
+#rm -rf "$(dirname "$0")/../vendor/"
+#rm -rf "$(dirname "$0")/../var"
